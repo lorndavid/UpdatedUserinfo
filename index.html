@@ -3,55 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Employee System</title>
+    <title>ឩស្សាហកម្មឌីជីថល</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
     <header class="app-header">
-        <div class="header-content">
-            <h2><i class="fa-solid fa-users-rectangle"></i> បញ្ជីឈ្មោះ</h2>
-            <button id="refreshBtn" class="icon-btn"><i class="fa-solid fa-arrows-rotate"></i></button>
+        <div class="header-top">
+            <div class="logo-area">
+                <i class="fa-solid fa-users-viewfinder"></i>
+                <h1>បញ្ជីឈ្មោះបុគ្គលិក</h1>
+            </div>
+            <button id="refreshBtn" class="action-btn">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
         </div>
+
         <div class="search-container">
-            <div class="search-wrapper">
-                <i class="fa-solid fa-search search-icon"></i>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
                 <input type="text" id="searchInput" placeholder="ស្វែងរកឈ្មោះ ឬ អត្តលេខ...">
-                <i class="fa-solid fa-times clear-icon" id="clearSearch" style="display:none;"></i>
+                <i class="fa-solid fa-circle-xmark clear-icon" id="clearSearch" style="display:none;"></i>
             </div>
         </div>
     </header>
 
     <main id="mainContainer" class="card-grid">
-        <div class="loading-spinner" id="loader">
+        <div class="loading-state" id="loader">
             <div class="spinner"></div>
-            <p>កំពុងទាញយកទិន្នន័យ...</p>
+            <p>កំពុងផ្ទុកទិន្នន័យ...</p>
         </div>
     </main>
 
     <div id="editView" class="edit-view hidden">
+        
         <div class="edit-header">
-            <button id="backBtn" class="icon-btn"><i class="fa-solid fa-arrow-left"></i> ត្រឡប់</button>
+            <button id="backBtn" class="nav-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
             <h3>កែប្រែព័ត៌មាន</h3>
-            <button id="saveBtn" class="save-btn">រក្សាទុក</button>
+            <button id="saveBtn" class="save-btn">
+                រក្សាទុក
+            </button>
         </div>
+
         <div class="edit-body">
-            <div class="profile-preview">
-                <img id="editProfileImg" src="" alt="Profile">
-                <h3 id="editProfileName">User Name</h3>
+            <div class="profile-section">
+                <div class="img-wrapper">
+                    <img id="editProfileImg" src="" alt="Profile">
+                    <div class="edit-icon-badge"><i class="fa-solid fa-pen"></i></div>
+                </div>
+                <h2 id="editProfileName">User Name</h2>
+                <span class="id-badge" id="editProfileID">ID: 001</span>
             </div>
+
             <form id="editForm" class="edit-form-grid">
                 </form>
+            
+            <div style="height: 100px;"></div>
         </div>
     </div>
 
     <div id="successModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="success-animation">
+                <div class="checkmark-circle">
+                    <div class="checkmark draw"></div>
+                </div>
+            </div>
             <h3>ជោគជ័យ!</h3>
-            <p>ទិន្នន័យត្រូវបានរក្សាទុកដោយជោគជ័យ</p>
+            <p>ទិន្នន័យត្រូវបានរក្សាទុក</p>
             <button id="closeModalBtn">យល់ព្រម</button>
         </div>
     </div>
