@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ឩស្សាហកម្មឌីជីថល</title>
+    <title>Employee Management</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
+    <!-- FIXED HEADER -->
     <header class="app-header">
         <div class="header-top">
             <div class="logo-area">
@@ -20,7 +21,6 @@
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
         </div>
-
         <div class="search-container">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
@@ -30,6 +30,7 @@
         </div>
     </header>
 
+    <!-- MAIN CONTENT (Infinite Scroll) -->
     <main id="mainContainer" class="card-grid">
         <div class="loading-state" id="loader">
             <div class="spinner"></div>
@@ -37,18 +38,13 @@
         </div>
     </main>
 
+    <!-- EDIT VIEW -->
     <div id="editView" class="edit-view hidden">
-        
         <div class="edit-header">
-            <button id="backBtn" class="nav-btn">
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
+            <button id="backBtn" class="nav-btn"><i class="fa-solid fa-arrow-left"></i></button>
             <h3>កែប្រែព័ត៌មាន</h3>
-            <button id="saveBtn" class="save-btn">
-                រក្សាទុក
-            </button>
+            <button id="saveBtn" class="save-btn">រក្សាទុក</button>
         </div>
-
         <div class="edit-body">
             <div class="profile-section">
                 <div class="img-wrapper">
@@ -58,20 +54,18 @@
                 <h2 id="editProfileName">User Name</h2>
                 <span class="id-badge" id="editProfileID">ID: 001</span>
             </div>
-
             <form id="editForm" class="edit-form-grid">
-                </form>
-            
+                <!-- Inputs & Selects injected here -->
+            </form>
             <div style="height: 100px;"></div>
         </div>
     </div>
 
+    <!-- SUCCESS MODAL -->
     <div id="successModal" class="modal-overlay">
         <div class="modal-content">
             <div class="success-animation">
-                <div class="checkmark-circle">
-                    <div class="checkmark draw"></div>
-                </div>
+                <div class="checkmark-circle"><div class="checkmark draw"></div></div>
             </div>
             <h3>ជោគជ័យ!</h3>
             <p>ទិន្នន័យត្រូវបានរក្សាទុក</p>

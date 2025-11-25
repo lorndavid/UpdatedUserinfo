@@ -1,21 +1,34 @@
-// *** REPLACE THIS URL WITH YOUR NEW DEPLOYMENT URL ***
+// *** REPLACE WITH YOUR DEPLOYMENT URL ***
 const API_URL =
   "https://script.google.com/macros/s/AKfycbzgh10Xqkw8rzXxxUOKvtMAfyA1VQ6zAy4TVi59WGO_jggKvFUbJojhD3TiqEbcooWz/exec";
 
-const DB_NAME = "EmpAppDB_Final";
+const DB_NAME = "EmpAppDB_FinalV2";
 const STORE_NAME = "employees";
 const DB_VERSION = 1;
-
-// Built-in Icon (Works Offline)
 const PLACEHOLDER_IMG =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2NjYyI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==";
 
-// DOM Elements
+// --- DROPDOWN CONFIGURATION ---
+const DROPDOWN_OPTIONS = {
+  វត្តមាន: ["NO", "Scan"],
+  ស្ថានភាព: ["កំពុងសិក្សា", "បានបញ្ចប់ការសិក្សា", "បានឈប់រៀន"],
+  ជំនាន់: ["ទី១", "ទី២", "ទី៣", "ទី៤"],
+  ឆ្នាំសិក្សា: ["ឆ្នាំទី១", "ឆ្នាំទី២", "ឆ្នាំទី៣", "ឆ្នាំទី៤", "ឈប់រៀន"],
+  ចន្ទ: ["Uptime", "ពេញម៉ោង", "ពេលយប់", "មួយព្រឹក", "មួយរសៀល"],
+  អង្គារ៍: ["Uptime", "ពេញម៉ោង", "ពេលយប់", "មួយព្រឹក", "មួយរសៀល"],
+  ពុធ: ["Uptime", "ពេញម៉ោង", "ពេលយប់", "មួយព្រឹក", "មួយរសៀល"],
+  ប្រហសប្បត្តិ៍: ["Uptime", "ពេញម៉ោង", "ពេលយប់", "មួយព្រឹក", "មួយរសៀល"],
+  សុក្រ: ["Uptime", "ពេញម៉ោង", "ពេលយប់", "មួយព្រឹក", "មួយរសៀល"],
+  សៅរ៍: ["Uptime", "ពេញម៉ោង", "ពេលយប់", "មួយព្រឹក", "មួយរសៀល"],
+  អាទិត្យ: ["Uptime", "ពេញម៉ោង", "ពេលយប់", "មួយព្រឹក", "មួយរសៀល"],
+};
+
 const mainContainer = document.getElementById("mainContainer");
 const searchInput = document.getElementById("searchInput");
 const clearSearchBtn = document.getElementById("clearSearch");
 const refreshBtn = document.getElementById("refreshBtn");
 const editView = document.getElementById("editView");
+const backBtn = document.getElementById("backBtn");
 const saveBtn = document.getElementById("saveBtn");
 const editForm = document.getElementById("editForm");
 const modal = document.getElementById("successModal");
@@ -23,10 +36,15 @@ const closeModalBtn = document.getElementById("closeModalBtn");
 const loader = document.getElementById("loader");
 
 let globalData = [];
+let displayedData = [];
+let renderCount = 0;
+const BATCH_SIZE = 50;
 let currentEditRow = null;
 let db = null;
 
+// --- Init ---
 window.onload = async () => {
+  window.addEventListener("scroll", handleScroll);
   try {
     await initDB();
     await loadData();
@@ -37,6 +55,24 @@ window.onload = async () => {
 
 refreshBtn.onclick = fetchDataFromAPI;
 
+// --- Infinite Scroll ---
+function handleScroll() {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+    loadMoreItems();
+  }
+}
+function loadMoreItems() {
+  if (renderCount >= displayedData.length) return;
+  const frag = document.createDocumentFragment();
+  const nextLimit = Math.min(renderCount + BATCH_SIZE, displayedData.length);
+  for (let i = renderCount; i < nextLimit; i++) {
+    frag.appendChild(createCard(displayedData[i]));
+  }
+  mainContainer.appendChild(frag);
+  renderCount = nextLimit;
+}
+
+// --- DB Logic ---
 function initDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -52,13 +88,11 @@ function initDB() {
     req.onerror = (e) => reject(e);
   });
 }
-
 function saveToDB(data) {
   if (!db) return;
   const tx = db.transaction([STORE_NAME], "readwrite");
   tx.objectStore(STORE_NAME).put({ key: "data", value: data });
 }
-
 async function loadData() {
   return new Promise((resolve) => {
     if (!db) return resolve(null);
@@ -67,7 +101,7 @@ async function loadData() {
     req.onsuccess = () => {
       if (req.result) {
         globalData = req.result.value;
-        renderGrid(globalData);
+        resetGrid(globalData);
         resolve();
       } else {
         fetchDataFromAPI();
@@ -81,124 +115,106 @@ function fetchDataFromAPI() {
   loader.style.display = "block";
   mainContainer.innerHTML = "";
   mainContainer.appendChild(loader);
-
   fetch(API_URL)
     .then((res) => res.json())
     .then((data) => {
       globalData = data;
-      renderGrid(globalData);
+      resetGrid(globalData);
       saveToDB(data);
     })
     .catch((err) => {
       loader.style.display = "none";
-      alert("Connection Failed. Checking local data...");
+      alert("Connection Failed.");
     });
 }
 
-// --- RENDER GRID (WITH FIX FOR EMPTY CARDS) ---
-function renderGrid(data) {
+function resetGrid(data) {
   mainContainer.innerHTML = "";
+  displayedData = data;
+  renderCount = 0;
   if (!data || data.length === 0) {
-    mainContainer.innerHTML =
-      '<p style="text-align:center; padding:20px;">No data found.</p>';
+    mainContainer.innerHTML = '<p class="loading-state">No data found.</p>';
     return;
   }
-
-  const fragment = document.createDocumentFragment();
-  // Render limit (100) for performance
-  const limit = Math.min(data.length, 100);
-  let count = 0;
-
-  for (let i = 0; i < data.length; i++) {
-    if (count >= limit) break; // Stop after 100 rendered
-
-    const item = data[i];
-
-    // *** FIX: Skip if Name is missing or empty ***
-    if (!item.name || item.name.trim() === "") {
-      continue;
-    }
-
-    const card = document.createElement("div");
-    card.className = "card";
-    const imgUrl =
-      item.image && item.image.startsWith("http")
-        ? item.image
-        : PLACEHOLDER_IMG;
-
-    card.innerHTML = `
-            <img src="${imgUrl}" class="card-img" loading="lazy">
-            <div class="card-name">${item.name}</div>
-            <div class="card-id">${item.id || ""}</div>
-        `;
-    card.onclick = () => openEditView(item);
-    fragment.appendChild(card);
-    count++;
-  }
-  mainContainer.appendChild(fragment);
+  loadMoreItems();
 }
 
-// --- SEARCH ---
+function createCard(item) {
+  const card = document.createElement("div");
+  card.className = "card";
+  const img =
+    item.image && item.image.startsWith("http") ? item.image : PLACEHOLDER_IMG;
+  card.innerHTML = `<img src="${img}" class="card-img" loading="lazy"><div class="card-name">${
+    item.name
+  }</div><div class="card-id">${item.id || ""}</div>`;
+  card.onclick = () => openEditView(item);
+  return card;
+}
+
 searchInput.addEventListener("input", (e) => {
   const term = e.target.value.toLowerCase();
   clearSearchBtn.style.display = term ? "block" : "none";
-
   const filtered = globalData.filter((item) => {
-    // Filter Logic: Name Matches AND Name is not empty
-    const hasName = item.name && item.name.trim() !== "";
-    const matches =
-      (item.name || "").toLowerCase().includes(term) ||
-      (String(item.id) || "").toLowerCase().includes(term);
-    return hasName && matches;
+    const n = (item.name || "").toLowerCase();
+    const i = (String(item.id) || "").toLowerCase();
+    return n.includes(term) || i.includes(term);
   });
-
-  // Render Search Results
-  mainContainer.innerHTML = "";
-  filtered.slice(0, 50).forEach((item) => {
-    const card = document.createElement("div");
-    card.className = "card";
-    const imgUrl =
-      item.image && item.image.startsWith("http")
-        ? item.image
-        : PLACEHOLDER_IMG;
-    card.innerHTML = `<img src="${imgUrl}" class="card-img"><div class="card-name">${item.name}</div><div class="card-id">${item.id}</div>`;
-    card.onclick = () => openEditView(item);
-    mainContainer.appendChild(card);
-  });
+  resetGrid(filtered);
 });
-
 clearSearchBtn.onclick = () => {
   searchInput.value = "";
   clearSearchBtn.style.display = "none";
-  renderGrid(globalData);
+  resetGrid(globalData);
 };
 
-// --- EDIT VIEW ---
+// --- Edit View Logic ---
 function openEditView(item) {
   currentEditRow = item.row_index;
-  const imgUrl =
+  const img =
     item.image && item.image.startsWith("http") ? item.image : PLACEHOLDER_IMG;
-
-  document.getElementById("editProfileImg").src = imgUrl;
+  document.getElementById("editProfileImg").src = img;
   document.getElementById("editProfileName").innerText = item.name;
+  document.getElementById("editProfileID").innerText =
+    "ID: " + (item.id || "N/A");
 
   editForm.innerHTML = "";
 
-  // 1. Name & ID
+  // 1. Core Fields (Always Input)
   createInput("គោត្តនាមនិងនាម", "name", item.name);
   createInput("អត្តលេខ-DI", "id", item.id);
+  createInput("Link-code (Image)", "image", item.image);
 
-  // 2. Status (Prioritized)
-  const statusValue = item["វត្តមាន"] || "";
-  createInput("វត្តមាន (Status)", "វត្តមាន", statusValue);
+  // 2. Specific Fields (Dropdowns prioritized)
+  const priorityKeys = ["វត្តមាន", "ស្ថានភាព", "ជំនាន់", "ឆ្នាំសិក្សា"];
+  priorityKeys.forEach((key) => {
+    if (DROPDOWN_OPTIONS[key]) {
+      createSelect(key, key, item[key] || "");
+    } else {
+      createInput(key, key, item[key] || "");
+    }
+  });
 
-  // 3. Image
-  createInput("Link-code", "image", item.image);
+  // 3. Days of the Week
+  const days = [
+    "ចន្ទ",
+    "អង្គារ៍",
+    "ពុធ",
+    "ប្រហសប្បត្តិ៍",
+    "សុក្រ",
+    "សៅរ៍",
+    "អាទិត្យ",
+  ];
+  days.forEach((day) => {
+    createSelect(day, day, item[day] || "");
+  });
 
-  // 4. Other Fields
+  // 4. Remaining Fields
   Object.keys(item).forEach((key) => {
-    const skip = ["name", "id", "image", "row_index", "វត្តមាន"];
-    if (!skip.includes(key)) {
+    if (
+      !["name", "id", "image", "row_index"].includes(key) &&
+      !priorityKeys.includes(key) &&
+      !days.includes(key)
+    ) {
       createInput(key, key, item[key]);
     }
   });
@@ -215,34 +231,51 @@ function createInput(label, key, value) {
   editForm.appendChild(div);
 }
 
-document.getElementById("backBtn").onclick = () =>
-  editView.classList.add("hidden");
+function createSelect(label, key, value) {
+  const div = document.createElement("div");
+  div.className = "form-group";
 
-// --- SAVE ---
+  let optionsHtml = `<option value="">Select...</option>`;
+  const options = DROPDOWN_OPTIONS[key] || [];
+
+  options.forEach((opt) => {
+    const selected = value === opt ? "selected" : "";
+    optionsHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
+  });
+
+  div.innerHTML = `<label>${label}</label>
+                     <select name="${key}" data-orig="${
+    value || ""
+  }">${optionsHtml}</select>`;
+  editForm.appendChild(div);
+}
+
+backBtn.onclick = () => editView.classList.add("hidden");
+closeModalBtn.onclick = () => modal.classList.remove("active");
+
 saveBtn.onclick = () => {
-  const inputs = editForm.querySelectorAll("input");
+  // Select both inputs and selects
+  const inputs = editForm.querySelectorAll("input, select");
   const updates = [];
   let hasChange = false;
 
   inputs.forEach((input) => {
     if (input.value !== input.dataset.orig) {
       updates.push({ header: input.name, value: input.value });
-
       const rec = globalData.find((r) => r.row_index === currentEditRow);
       if (rec) {
         rec[input.name] = input.value;
-        if (input.name === "name") rec["គោត្តនាមនិងនាម"] = input.value;
+        if (input.name === "name") rec["name"] = input.value;
       }
       hasChange = true;
     }
   });
 
-  if (!hasChange) return alert("No changes to save.");
+  if (!hasChange) return alert("No changes.");
 
-  saveBtn.innerText = "Saving...";
+  saveBtn.innerText = "...";
   saveBtn.disabled = true;
-
-  saveToDB(globalData); // Save Local
+  saveToDB(globalData);
 
   fetch(API_URL, {
     method: "POST",
@@ -252,23 +285,17 @@ saveBtn.onclick = () => {
     .then((data) => {
       saveBtn.innerText = "រក្សាទុក";
       saveBtn.disabled = false;
-
       if (data.status === "success") {
-        modal.classList.add("active"); // Show Modal
+        modal.classList.add("active");
         editView.classList.add("hidden");
-        renderGrid(globalData);
+        // No full re-render needed
       } else {
         alert("Error: " + data.message);
       }
     })
     .catch(() => {
-      saveBtn.innerText = "Save";
+      saveBtn.innerText = "រក្សាទុក";
       saveBtn.disabled = false;
-      alert("Network Failed. Saved locally only.");
+      alert("Saved locally.");
     });
-};
-
-closeModalBtn.onclick = () => modal.classList.remove("active");
-modal.onclick = (e) => {
-  if (e.target === modal) modal.classList.remove("active");
 };
