@@ -2,7 +2,7 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbzgh10Xqkw8rzXxxUOKvtMAfyA1VQ6zAy4TVi59WGO_jggKvFUbJojhD3TiqEbcooWz/exec";
 
-const DB_NAME = "EmpAppDB_V6"; // New version to clear cache
+const DB_NAME = "EmpAppDB_V10_Final";
 const STORE_NAME = "employees";
 const DB_VERSION = 1;
 const PLACEHOLDER_IMG =
@@ -32,7 +32,7 @@ const editForm = document.getElementById("editForm");
 const themeToggleBtn = document.getElementById("themeToggleBtn");
 const scrollTopBtn = document.getElementById("scrollTopBtn");
 
-// Mobile Search Elements
+// Mobile Search
 const mobileSearchBtn = document.getElementById("mobileSearchBtn");
 const closeSearchBtn = document.getElementById("closeSearchBtn");
 const appHeader = document.getElementById("appHeader");
@@ -70,23 +70,17 @@ window.onload = async () => {
   }
 };
 
-// --- MOBILE SEARCH LOGIC ---
-mobileSearchBtn.onclick = () => {
-  appHeader.classList.add("search-active");
-  setTimeout(() => searchInput.focus(), 100); // Auto focus (Alert Keyboard)
-};
-
-closeSearchBtn.onclick = () => {
-  appHeader.classList.remove("search-active");
-  searchInput.value = ""; // Optional: Clear search on close
-  resetGrid(globalData);
-};
+// --- SCROLL LOCK UTILITY ---
+function toggleBodyScroll(lock) {
+  document.body.style.overflow = lock ? "hidden" : "";
+}
 
 // --- VIEW SWITCHING LOGIC ---
 function switchView(viewId) {
   filterView.classList.remove("active");
   statsView.classList.remove("active");
   editView.classList.remove("active");
+  toggleBodyScroll(false); // Unlock default
 
   [navAll, navFilter, navStats].forEach((btn) =>
     btn.classList.remove("active")
@@ -95,31 +89,33 @@ function switchView(viewId) {
   if (viewId === "filter") {
     filterView.classList.add("active");
     navFilter.classList.add("active");
+    toggleBodyScroll(true);
     setTimeout(() => classSearchInput.focus(), 300);
   } else if (viewId === "stats") {
     statsView.classList.add("active");
     navStats.classList.add("active");
+    toggleBodyScroll(true);
     renderStats();
   } else {
     navAll.classList.add("active");
     if (viewId === "reset") resetGrid(globalData);
   }
 }
-
 navAll.onclick = () => switchView("reset");
 navFilter.onclick = () => {
   switchView("filter");
   renderFilterButtons();
 };
 navStats.onclick = () => switchView("stats");
-
 document.getElementById("closeFilterBtn").onclick = () => switchView("home");
 filterBackdrop.onclick = () => switchView("home");
 document.getElementById("closeStatsBtn").onclick = () => switchView("home");
-document.getElementById("backBtn").onclick = () =>
+document.getElementById("backBtn").onclick = () => {
   editView.classList.remove("active");
+  toggleBodyScroll(false);
+};
 
-// --- THEME ---
+// Theme
 themeToggleBtn.onclick = () => {
   const current = document.documentElement.getAttribute("data-theme");
   const newTheme = current === "light" ? "dark" : "light";
@@ -132,7 +128,7 @@ function updateThemeIcon(theme) {
     theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
 }
 
-// --- SCROLL & DB ---
+// Scroll
 function toggleScrollBtn() {
   if (window.scrollY > 300) {
     scrollTopBtn.classList.remove("hidden");
@@ -146,6 +142,18 @@ function toggleScrollBtn() {
 }
 scrollTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
+// Mobile Search
+mobileSearchBtn.onclick = () => {
+  appHeader.classList.add("search-active");
+  setTimeout(() => searchInput.focus(), 100);
+};
+closeSearchBtn.onclick = () => {
+  appHeader.classList.remove("search-active");
+  searchInput.value = "";
+  resetGrid(globalData);
+};
+
+// DB
 function initDB() {
   return new Promise((r, j) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -197,8 +205,9 @@ function fetchDataFromAPI() {
       alert("Connection Failed.");
     });
 }
+refreshBtn.onclick = fetchDataFromAPI;
 
-// --- RENDER & SEARCH ---
+// Render
 function resetGrid(data) {
   mainContainer.innerHTML = "";
   displayedData = data;
@@ -219,9 +228,15 @@ function loadMoreItems() {
   }
   mainContainer.appendChild(frag);
   renderCount = nextLimit;
+  if (
+    document.body.scrollHeight <= window.innerHeight &&
+    renderCount < displayedData.length
+  ) {
+    loadMoreItems();
+  }
 }
 function handleScroll() {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200)
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300)
     loadMoreItems();
 }
 
@@ -252,7 +267,7 @@ document.getElementById("clearSearch").onclick = () => {
   resetGrid(globalData);
 };
 
-// --- FEATURES ---
+// Features
 function renderFilterButtons() {
   classFilterContainer.innerHTML = "";
   const classes = [
@@ -333,6 +348,7 @@ function openEditView(item) {
   document.getElementById("editProfileID").innerText =
     "ID: " + (item.id || "N/A");
   editForm.innerHTML = "";
+
   createInput("គោត្តនាមនិងនាម", "name", item.name);
   createInput("អត្តលេខ-DI", "id", item.id);
   createInput(
@@ -375,6 +391,7 @@ function openEditView(item) {
     }
   });
   editView.classList.add("active");
+  toggleBodyScroll(true);
 }
 
 function createInput(l, k, v) {
@@ -400,6 +417,7 @@ function createSelect(l, k, v) {
   editForm.appendChild(d);
 }
 
+// SAVE
 document.getElementById("saveBtn").onclick = () => {
   const inputs = editForm.querySelectorAll("input, select");
   const updates = [];
@@ -407,12 +425,19 @@ document.getElementById("saveBtn").onclick = () => {
   inputs.forEach((input) => {
     if (input.value !== input.dataset.orig) {
       updates.push({ header: input.name, value: input.value });
+      const rec = globalData.find((r) => r.row_index === currentEditRow);
+      if (rec) {
+        rec[input.name] = input.value;
+      }
       hasChange = true;
     }
   });
-  if (!hasChange) return alert("No changes.");
+
+  if (!hasChange) return alert("No changes detected.");
   document.getElementById("loadingModal").classList.add("active");
-  saveToDB(globalData); // Save locally first
+  document.getElementById("saveBtn").innerText = "...";
+  document.getElementById("saveBtn").disabled = true;
+  saveToDB(globalData);
   fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({ rowIndex: currentEditRow, updates: updates }),
@@ -420,15 +445,50 @@ document.getElementById("saveBtn").onclick = () => {
     .then((res) => res.json())
     .then((data) => {
       document.getElementById("loadingModal").classList.remove("active");
+      document.getElementById("saveBtn").innerText = "រក្សាទុក";
+      document.getElementById("saveBtn").disabled = false;
       if (data.status === "success") {
         document.getElementById("successModal").classList.add("active");
         editView.classList.remove("active");
+        toggleBodyScroll(false);
+        resetGrid(globalData);
       } else alert("Error: " + data.message);
     })
     .catch(() => {
       document.getElementById("loadingModal").classList.remove("active");
+      document.getElementById("saveBtn").disabled = false;
       alert("Saved locally. Network failed.");
     });
 };
+
+// DELETE
+document.getElementById("deleteBtn").onclick = () => {
+  if (!confirm("Are you sure you want to delete this user?")) return;
+  document.getElementById("loadingModal").classList.add("active");
+  globalData = globalData.filter((item) => item.row_index !== currentEditRow);
+  saveToDB(globalData);
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ rowIndex: currentEditRow, action: "delete" }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      document.getElementById("loadingModal").classList.remove("active");
+      if (data.status === "success") {
+        document.getElementById("successModal").classList.add("active");
+        editView.classList.remove("active");
+        toggleBodyScroll(false);
+        resetGrid(globalData);
+      } else alert("Error deleting: " + data.message);
+    })
+    .catch(() => {
+      document.getElementById("loadingModal").classList.remove("active");
+      alert("Deleted locally. Sync failed.");
+      resetGrid(globalData);
+      editView.classList.remove("active");
+      toggleBodyScroll(false);
+    });
+};
+
 document.getElementById("closeModalBtn").onclick = () =>
   document.getElementById("successModal").classList.remove("active");
