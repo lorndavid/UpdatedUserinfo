@@ -17,26 +17,37 @@
 <body>
 
     <!-- FIXED HEADER -->
-    <header class="app-header">
-        <div class="header-content">
+    <header class="app-header" id="appHeader">
+        
+        <!-- LOGO & ACTIONS (Visible by default) -->
+        <div class="header-content" id="headerContent">
             <div class="logo-area">
                 <i class="fa-solid fa-graduation-cap"></i>
-                <h1>បញ្ជីឈ្មោះនិស្សិតសរុប</h1>
+                <h1>បញ្ជីឈ្មោះ</h1>
             </div>
             <div class="header-actions">
+                <!-- MOBILE SEARCH ICON (New) -->
+                <button id="mobileSearchBtn" class="icon-btn mobile-only">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+
                 <button id="themeToggleBtn" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
-                <!-- <button id="refreshBtn" class="icon-btn"><i class="fa-solid fa-rotate-right"></i></button> -->
+                <button id="refreshBtn" class="icon-btn"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
         </div>
-        <!-- Integrated Search -->
-        <div class="search-wrapper">
+
+        <!-- SEARCH BAR (Hidden on mobile until clicked) -->
+        <div class="search-wrapper" id="searchWrapper">
+            <!-- Back Button for Mobile Search -->
+            <i class="fa-solid fa-arrow-left search-back-btn" id="closeSearchBtn"></i>
+            
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" id="searchInput" placeholder="ស្វែងរកឈ្មោះ ឬ អត្តលេខ...">
+            <input type="text" id="searchInput" placeholder="ស្វែងរក...">
             <i class="fa-solid fa-circle-xmark clear-icon" id="clearSearch" style="display:none;"></i>
         </div>
     </header>
 
-    <!-- MAIN CONTENT (SCROLLABLE LIST) -->
+    <!-- MAIN CONTENT -->
     <main id="mainContainer" class="card-grid">
         <div class="loading-state" id="loader">
             <div class="spinner"></div>
@@ -44,7 +55,7 @@
         </div>
     </main>
 
-    <!-- FLOATING FOOTER NAVIGATION -->
+    <!-- FOOTER -->
     <div class="footer-wrapper">
         <nav class="app-footer">
             <button class="nav-item active" id="navAll">
@@ -62,14 +73,12 @@
                 <span>Stats</span>
             </button>
         </nav>
-        
-        <!-- Back to Top -->
         <button id="scrollTopBtn" class="scroll-top-btn hidden">
             <i class="fa-solid fa-arrow-up"></i>
         </button>
     </div>
 
-    <!-- FILTER VIEW (BOTTOM SHEET/MODAL) -->
+    <!-- VIEWS & MODALS -->
     <div id="filterView" class="bottom-sheet hidden">
         <div class="sheet-content">
             <div class="sheet-header">
@@ -83,14 +92,11 @@
                     <input type="text" id="classSearchInput" placeholder="Find a class...">
                 </div>
             </div>
-            <div class="sheet-body">
-                <div class="chip-grid" id="classFilterContainer"></div>
-            </div>
+            <div class="sheet-body"><div class="chip-grid" id="classFilterContainer"></div></div>
         </div>
         <div class="sheet-backdrop" id="filterBackdrop"></div>
     </div>
 
-    <!-- ANALYTICS VIEW (FULL SCREEN) -->
     <div id="statsView" class="full-page-view hidden">
         <div class="view-header">
             <h2>របាយការណ៍សរុប (Analytics)</h2>
@@ -117,7 +123,6 @@
         <div style="height: 100px;"></div>
     </div>
 
-    <!-- EDIT VIEW (CONTAINERIZED FORM) -->
     <div id="editView" class="edit-view hidden">
         <div class="edit-header">
             <button id="backBtn" class="nav-btn"><i class="fa-solid fa-arrow-left"></i></button>
@@ -137,7 +142,6 @@
         </div>
     </div>
 
-    <!-- LOADING OVERLAY -->
     <div id="loadingModal" class="modal-overlay">
         <div class="modal-content">
             <div class="spinner"></div>
@@ -145,7 +149,6 @@
         </div>
     </div>
 
-    <!-- SUCCESS OVERLAY -->
     <div id="successModal" class="modal-overlay">
         <div class="modal-content">
             <div class="checkmark-circle"><div class="checkmark draw"></div></div>

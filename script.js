@@ -2,7 +2,7 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbzgh10Xqkw8rzXxxUOKvtMAfyA1VQ6zAy4TVi59WGO_jggKvFUbJojhD3TiqEbcooWz/exec";
 
-const DB_NAME = "EmpAppDB_V5";
+const DB_NAME = "EmpAppDB_V6"; // New version to clear cache
 const STORE_NAME = "employees";
 const DB_VERSION = 1;
 const PLACEHOLDER_IMG =
@@ -31,6 +31,11 @@ const editView = document.getElementById("editView");
 const editForm = document.getElementById("editForm");
 const themeToggleBtn = document.getElementById("themeToggleBtn");
 const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+// Mobile Search Elements
+const mobileSearchBtn = document.getElementById("mobileSearchBtn");
+const closeSearchBtn = document.getElementById("closeSearchBtn");
+const appHeader = document.getElementById("appHeader");
 
 // Views
 const navAll = document.getElementById("navAll");
@@ -63,6 +68,18 @@ window.onload = async () => {
   } catch (e) {
     fetchDataFromAPI();
   }
+};
+
+// --- MOBILE SEARCH LOGIC ---
+mobileSearchBtn.onclick = () => {
+  appHeader.classList.add("search-active");
+  setTimeout(() => searchInput.focus(), 100); // Auto focus (Alert Keyboard)
+};
+
+closeSearchBtn.onclick = () => {
+  appHeader.classList.remove("search-active");
+  searchInput.value = ""; // Optional: Clear search on close
+  resetGrid(globalData);
 };
 
 // --- VIEW SWITCHING LOGIC ---
