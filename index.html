@@ -1,36 +1,42 @@
 <!DOCTYPE html>
-<html lang="km">
+<html lang="km" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Employee Management</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Professional Employee System</title>
+    
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Moul&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- ICONS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <!-- FIXED HEADER -->
     <header class="app-header">
-        <div class="header-top">
+        <div class="header-content">
             <div class="logo-area">
-                <i class="fa-solid fa-users-viewfinder"></i>
-                <h1>បញ្ជីឈ្មោះបុគ្គលិក</h1>
+                <i class="fa-solid fa-graduation-cap"></i>
+                <h1>បញ្ជីឈ្មោះ</h1>
             </div>
-            <button id="refreshBtn" class="action-btn">
-                <i class="fa-solid fa-rotate-right"></i>
-            </button>
+            <div class="header-actions">
+                <button id="themeToggleBtn" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
+                <!-- <button id="refreshBtn" class="icon-btn"><i class="fa-solid fa-rotate-right"></i></button> -->
+            </div>
         </div>
-        <div class="search-container">
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="searchInput" placeholder="ស្វែងរកឈ្មោះ ឬ អត្តលេខ...">
-                <i class="fa-solid fa-circle-xmark clear-icon" id="clearSearch" style="display:none;"></i>
-            </div>
+        <!-- Integrated Search -->
+        <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="searchInput" placeholder="ស្វែងរកឈ្មោះ ឬ អត្តលេខ...">
+            <i class="fa-solid fa-circle-xmark clear-icon" id="clearSearch" style="display:none;"></i>
         </div>
     </header>
 
-    <!-- MAIN CONTENT (Infinite Scroll) -->
+    <!-- MAIN CONTENT (SCROLLABLE LIST) -->
     <main id="mainContainer" class="card-grid">
         <div class="loading-state" id="loader">
             <div class="spinner"></div>
@@ -38,7 +44,80 @@
         </div>
     </main>
 
-    <!-- EDIT VIEW -->
+    <!-- FLOATING FOOTER NAVIGATION -->
+    <div class="footer-wrapper">
+        <nav class="app-footer">
+            <button class="nav-item active" id="navAll">
+                <i class="fa-solid fa-users"></i>
+                <span>Users</span>
+            </button>
+            <div class="nav-divider"></div>
+            <button class="nav-item" id="navFilter">
+                <i class="fa-solid fa-filter"></i>
+                <span>Filter</span>
+            </button>
+            <div class="nav-divider"></div>
+            <button class="nav-item" id="navStats">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Stats</span>
+            </button>
+        </nav>
+        
+        <!-- Back to Top -->
+        <button id="scrollTopBtn" class="scroll-top-btn hidden">
+            <i class="fa-solid fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <!-- FILTER VIEW (BOTTOM SHEET/MODAL) -->
+    <div id="filterView" class="bottom-sheet hidden">
+        <div class="sheet-content">
+            <div class="sheet-header">
+                <div class="drag-handle"></div>
+                <div class="sheet-title-row">
+                    <h2><i class="fa-solid fa-filter"></i> Filter Class</h2>
+                    <button class="close-sheet-btn" id="closeFilterBtn">Done</button>
+                </div>
+                <div class="filter-search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="classSearchInput" placeholder="Find a class...">
+                </div>
+            </div>
+            <div class="sheet-body">
+                <div class="chip-grid" id="classFilterContainer"></div>
+            </div>
+        </div>
+        <div class="sheet-backdrop" id="filterBackdrop"></div>
+    </div>
+
+    <!-- ANALYTICS VIEW (FULL SCREEN) -->
+    <div id="statsView" class="full-page-view hidden">
+        <div class="view-header">
+            <h2>របាយការណ៍សរុប (Analytics)</h2>
+            <button class="close-view-btn" id="closeStatsBtn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="stats-body">
+            <div class="stat-card main-stat">
+                <h3>សរុបទាំងអស់</h3>
+                <h1 id="totalCount">0</h1>
+                <div class="gender-row">
+                    <div class="g-box male"><i class="fa-solid fa-person"></i> <span id="maleCount">0</span></div>
+                    <div class="g-box female"><i class="fa-solid fa-person-dress"></i> <span id="femaleCount">0</span></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3><i class="fa-solid fa-briefcase"></i> ផ្នែកការងារ</h3>
+                <div class="stat-list" id="jobStatsList"></div>
+            </div>
+            <div class="stat-card">
+                <h3><i class="fa-solid fa-map-location-dot"></i> ទីកន្លែងកំណើត</h3>
+                <div class="stat-list" id="placeStatsList"></div>
+            </div>
+        </div>
+        <div style="height: 100px;"></div>
+    </div>
+
+    <!-- EDIT VIEW (CONTAINERIZED FORM) -->
     <div id="editView" class="edit-view hidden">
         <div class="edit-header">
             <button id="backBtn" class="nav-btn"><i class="fa-solid fa-arrow-left"></i></button>
@@ -54,21 +133,23 @@
                 <h2 id="editProfileName">User Name</h2>
                 <span class="id-badge" id="editProfileID">ID: 001</span>
             </div>
-            <form id="editForm" class="edit-form-grid">
-                <!-- Inputs & Selects injected here -->
-            </form>
-            <div style="height: 100px;"></div>
+            <form id="editForm" class="edit-form-grid"></form>
         </div>
     </div>
 
-    <!-- SUCCESS MODAL -->
+    <!-- LOADING OVERLAY -->
+    <div id="loadingModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="spinner"></div>
+            <h3 class="loading-text">កំពុងរក្សាទុក...</h3>
+        </div>
+    </div>
+
+    <!-- SUCCESS OVERLAY -->
     <div id="successModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="success-animation">
-                <div class="checkmark-circle"><div class="checkmark draw"></div></div>
-            </div>
+            <div class="checkmark-circle"><div class="checkmark draw"></div></div>
             <h3>ជោគជ័យ!</h3>
-            <p>ទិន្នន័យត្រូវបានរក្សាទុក</p>
             <button id="closeModalBtn">យល់ព្រម</button>
         </div>
     </div>
